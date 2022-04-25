@@ -3,26 +3,23 @@ const VERSION = 'v1.0.0';
 class Plugin {
   constructor(registry, plugins) {
     this.registry = registry;
+    this.otherPlugins = plugins;
     console.log(`[${VERSION}] constructing plugin!`);
   }
 
   setup = () => {
-    this.registry.register('MyPlugin', this);
     console.log(`[${VERSION}] setup called!`);
   }
 
   start = () => {
-    console.log(`[${VERSION}] start called!`);
-
+    this.iHandle = setInterval(() => {
+      this.registry.get('MyPlugin')?.something();
+    }, 100);
   }
 
   stop = () => {
-    this.registry.unregister('plugin');
+    clearInterval(this.iHandle);
     console.log(`[${VERSION}] stop called!`);
-  }
-
-  something = () => {
-    console.log('oh yeah something!');
   }
 }
 

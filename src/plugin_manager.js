@@ -1,15 +1,16 @@
 const path = require('path');
 const { isolatePlugin } = require('./isolate_plugin');
 class PluginManager {
-  constructor() {
+  constructor(registry) {
     this.pluginsMatrix = {};
+    this.registry = registry;
     this.externalBasePath = path.join(__dirname, '..', 'external');
   }
 
   registerPlugin = async (pluginName, activeVersion) => {
     const pluginPath = this.versionToPluginPath(activeVersion)
     const plugin = await isolatePlugin({ pluginPath });
-    const pluginInstance = new plugin.plugin.Plugin();
+    const pluginInstance = new plugin.plugin.Plugin(this.registry, this.pluginsMatrix);
     const pluginObject = {
       pluginName,
       activeVersion,
@@ -27,12 +28,12 @@ class PluginManager {
     }
     console.log(`shutting down plugin v${pluginObject.activeVersion}`);
     await this.shutdownPlugin(pluginName);
-    
+
     // load new plugin version;
     console.log(`reloading plugin to ${activeVersion}`);
     return await this.registerPlugin(pluginName, activeVersion);
   }
-  
+
   shutdownPlugin = async (pluginName) => {
     const pluginObject = this.pluginsMatrix[pluginName];
     // clean existing plugin
